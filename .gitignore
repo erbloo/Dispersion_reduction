@@ -16,6 +16,7 @@ out/
 *.so
 
 # Distribution / packaging
+models/
 .Python
 out/
 build/
