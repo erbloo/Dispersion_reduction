@@ -4,10 +4,7 @@ from torch.autograd import Variable
 import torch
 import torch.nn.functional as F
 from PIL import Image
-from api_utils import detect_label_file, detect_objects_file, googleDet_to_Dictionary
-import shutil
-from torch_utils import numpy_to_variable, variable_to_numpy
-from image_utils import save_bbox_img
+from utils.api_utils import detect_label_file
 import os
 
 import pdb
@@ -28,7 +25,7 @@ class DispersionAttack_gpu(object):
         X_var = copy.deepcopy(X_nat_var)
         for i in range(self.steps):
             X_var = X_var.requires_grad_()
-            internal_logits, pred = self.model.prediction(X_var, internal=internal)
+            internal_logits, _ = self.model.prediction(X_var, internal=internal)
             logit = internal_logits[attack_layer_idx]
             loss = -1 * logit.std()
             self.model.zero_grad()

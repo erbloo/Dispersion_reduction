@@ -9,50 +9,35 @@ import os
 
 import pdb
 
-def load_image(
-        shape=(224, 224), bounds=(0, 1), dtype=np.float32,
-        data_format='channels_last', fname='example.png', abs_path=False, fpath=None):
-    """ Returns a resized image of target fname.
 
-    Parameters
-    ----------
-    shape : list of integers
-        The shape of the returned image.
-    data_format : str
-        "channels_first" or "channls_last".
+def load_images(dir_path='images', size=[224, 224]):
+    '''load images from the diractory to channel first tensor.
+    '''
+    file_list = os.listdir(dir_path)
+    images_chw_list = []
+    if not file_list:
+        warnings.warn("No image loaded.")
+    for file_name in file_list:
+        img_pil = Image.open(os.path.join(dir_path, file_name)).convert('RGB').resize(size)
+        temp_img_np = np.array(img_pil).astype(np.float32) / 255.
+        temp_img_chw = np.transpose(temp_img_np, (2, 0, 1))
+        images_chw_list.append(temp_img_chw)
+    images_bchw = np.array(images_chw_list)
+    return torch.from_numpy(images_bchw), file_list
 
-    Returns
-    -------
-    image : array_like
-        The example image in bounds (0, 255) or (0, 1)
-        depending on bounds parameter
-    """
-    if abs_path == True:
-        assert fpath is not None, "fpath has not to be None when abs_path is True."
-    assert len(shape) == 2
-    assert data_format in ['channels_first', 'channels_last']
-    if not abs_path:
-        path = os.path.join(os.path.dirname(__file__), 'images/%s' % fname)
-    else:
-        path = fpath
-    image = Image.open(path)
-    image = image.resize(shape)
-    image = image.convert('RGB')
-    image = np.asarray(image, dtype=dtype)
-    image = image[:, :, :3]
-    assert image.shape == shape + (3,)
-    if data_format == 'channels_first':
-        image = np.transpose(image, (2, 0, 1))
-    if bounds != (0, 255):
-        image /= 255.
-    return image
+def save_images(images_t, dir_path='outputs', file_name_list=None):
+    '''save channel first tensor batch to images. 
+    '''
+    images_bwhc = np.transpose(images_t.numpy(), (0, 2, 3, 1))
+    if file_name_list is None:
+        file_name_list = []
+        for idx in range(len(images_bwhc)):
+            file_name_list.append('adv_{0:04d}.jpg'.format(idx))
+    assert len(file_name_list) == len(images_bwhc)
 
-def save_image(image):
-    if image.shape[0] == 3:
-        image = np.transpose(image, (1, 2, 0))
-    if image.dtype is not np.uint8:
-        image = (image * 255).astype(np.uint8)
-    Image.fromarray(image).save("./out/test.jpg")    
+    for image_whc, file_name in zip(images_bwhc, file_name_list):
+        image_whc = (image_whc * 255).astype(np.uint8)
+        image_pil = Image.fromarray(image_whc).save(os.path.join(dir_path, file_name))  
 
 def numpy_to_bytes(image, format='JPEG'):
     if image.shape[0] == 3:

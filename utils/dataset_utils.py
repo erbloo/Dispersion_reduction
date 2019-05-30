@@ -19,5 +19,5 @@ def generate_FDDB_testdata(input_dir, output_dir, num_imgs=100):
     
 
 if __name__ == "__main__":
-    #generate_imagenet_testdata("/home/yantao/datasets/ILSVRC/Data/DET/test/", "/home/yantao/datasets/imagenet_100image/")
-    generate_FDDB_testdata("/home/yantao/datasets/FDDB_face/images/", "/home/yantao/datasets/FDDB_100image/")
+    generate_imagenet_testdata("/home/yantao/datasets/ILSVRC/Data/DET/test/", "/home/yantao/datasets/imagenet_100image/")
+    #generate_FDDB_testdata("/home/yantao/datasets/FDDB_face/images/", "/home/yantao/datasets/FDDB_100image/")
