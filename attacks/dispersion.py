@@ -11,22 +11,21 @@ import pdb
 
 
 class DispersionAttack_gpu(object):
-    def __init__(self, model, epsilon=16/255., step_size=0.004, steps=10):
+    def __init__(self, model, epsilon, step_size, steps):
         
         self.step_size = step_size
         self.epsilon = epsilon
         self.steps = steps
         self.model = copy.deepcopy(model)
 
-    def __call__(self, X_nat_var, attack_layer_idx=-1, internal=[]):
+    def __call__(self, X_nat_var, attack_layer_idx=-1):
         for p in self.model.parameters():
             p.requires_grad = False
         self.model.eval()
         X_var = copy.deepcopy(X_nat_var)
         for i in range(self.steps):
             X_var = X_var.requires_grad_()
-            internal_logits, _ = self.model.prediction(X_var, internal=internal)
-            logit = internal_logits[attack_layer_idx]
+            logit, _ = self.model.prediction(X_var)
             loss = -1 * logit.std()
             self.model.zero_grad()
             loss.backward()

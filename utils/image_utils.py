@@ -6,24 +6,38 @@ import matplotlib.pyplot as plt
 from tqdm import tqdm
 import cv2
 import os
+import warnings
+import torch
 
 import pdb
 
 
-def load_images(dir_path='images', size=[224, 224]):
+def load_images(dir_path='images', 
+                size=[224, 224], 
+                order='channel_last', 
+                zero_one_bound=False, 
+                to_tensor=False):
     '''load images from the diractory to channel first tensor.
     '''
     file_list = os.listdir(dir_path)
-    images_chw_list = []
+    temp_img_np_list = []
     if not file_list:
         warnings.warn("No image loaded.")
     for file_name in file_list:
         img_pil = Image.open(os.path.join(dir_path, file_name)).convert('RGB').resize(size)
-        temp_img_np = np.array(img_pil).astype(np.float32) / 255.
-        temp_img_chw = np.transpose(temp_img_np, (2, 0, 1))
-        images_chw_list.append(temp_img_chw)
-    images_bchw = np.array(images_chw_list)
-    return torch.from_numpy(images_bchw), file_list
+        temp_img_np = np.array(img_pil).astype(np.float32)
+        if zero_one_bound:
+            temp_img_np /= 255.
+        if order == 'channel_first':
+            temp_img_np = np.transpose(temp_img_np, (2, 0, 1))
+        elif order != 'channel_last':
+            raise ValueError('Invalid orider type.')
+        temp_img_np_list.append(temp_img_np)
+    images_np = np.array(temp_img_np_list)
+    if to_tensor:
+        return torch.from_numpy(images_np), file_list
+    else:
+        return images_np, file_list
 
 def save_images(images_t, dir_path='outputs', file_name_list=None):
     '''save channel first tensor batch to images. 
