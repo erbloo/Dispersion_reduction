@@ -16,7 +16,6 @@ out/
 *.so
 
 # Distribution / packaging
-models/
 .Python
 out/
 build/
@@ -120,3 +119,4 @@ venv.bak/
 **/*.png
 
 **/*.ckpt*
+**/__pycache__/
