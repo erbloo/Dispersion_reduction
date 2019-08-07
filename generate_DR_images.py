@@ -2,10 +2,11 @@ import sys
 sys.path.append('/home/yantao/workspace/projects/baidu/Dispersion_reduction')
 import os
 import torch
+import torchvision
 import numpy as np
 from tqdm import tqdm
 
-from attacks.dispersion import DispersionAttack_gpu
+from attacks.dispersion import DispersionAttack_gpu, DispersionAttack_opt_gpu, transform_DR_attack
 from models.vgg import Vgg16
 from models.resnet import Resnet152
 from models.inception_v3 import Inception_v3
@@ -20,7 +21,10 @@ def main():
         'attack_model' : 'inception_v3',
         'input_dir_path' : '/home/yantao/datasets/imagenet_100image/original',
         'output_dir_path' : 'images_adv',
-        'attack_num_steps' : 200,
+        'attack_num_steps' : 1000,
+        'step_size' : 2,
+        'learning_rate' : 5e-2,
+        'attack_type' : 'ori_trans', # ori/opt
     }
 
     if params['attack_model'] == 'vgg16':
@@ -33,20 +37,28 @@ def main():
         model = Resnet152(attack_layer_idx=attack_layer_idx)
     elif params['attack_model'] == 'inception_v3':
         params['IMAGE_SIZE'] = 299
-        attack_layer_idx = 10 # 0 ~ 13
+        attack_layer_idx = [7] # 0 ~ 13
         model = Inception_v3(attack_layer_idx=attack_layer_idx)
+        model_ori = torchvision.models.inception_v3(pretrained=True).cuda().eval()
     else:
         raise ValueError('Invalid attack model type.')
 
     model_name = model.get_name()
-    params['output_dir_path'] = os.path.join('/home/yantao/datasets/imagenet_100image', 'DR_' + model_name + '_layer_{0}'.format(attack_layer_idx) + '_steps_{0}'.format(params['attack_num_steps']))
+    '''
+    params['output_dir_path'] = os.path.join('/home/yantao/datasets/imagenet_100image', 'DR_' + params['attack_type'] + '_' + model_name + '_layer_{0}'.format(attack_layer_idx) + '_steps_{0}_{1:01d}'.format(params['attack_num_steps'], params['step_size']))
     if not os.path.exists(params['output_dir_path']):
         os.mkdir(params['output_dir_path'])
-    adversary = DispersionAttack_gpu(model, 
-                                     epsilon=16/255., 
-                                     step_size=2/255., 
-                                     steps=params['attack_num_steps'],
-                                     )
+    '''
+    params['output_dir_path'] = 'images_adv'
+    
+    if params['attack_type'] == 'ori':
+        adversary = DispersionAttack_gpu(model, epsilon=16/255., step_size=params['step_size']/255., steps=params['attack_num_steps'])
+    elif params['attack_type'] == 'opt':
+        adversary = DispersionAttack_opt_gpu(model, epsilon=16/255., learning_rate=params['learning_rate'], steps=params['attack_num_steps'])
+    elif params['attack_type'] == 'ori_trans':
+        adversary = transform_DR_attack(model, epsilon=16/255., step_size=params['step_size']/255., steps=params['attack_num_steps'], prob=1.0, image_resize=330)
+    else:
+        raise ValueError('Invalid attack type.')
     
     images_t, file_name_list = load_images(dir_path=params['input_dir_path'], 
                                            size=[params['IMAGE_SIZE'], params['IMAGE_SIZE']], 
@@ -65,7 +77,7 @@ def main():
             temp_images_t = images_t[idx * params['batch_size']:]
             temp_file_name_list = file_name_list[idx * params['batch_size']:]
 
-        advs_var = adversary(temp_images_t.cuda(), attack_layer_idx=attack_layer_idx)
+        advs_var = adversary(temp_images_t.cuda())
         advs_t = advs_var.cpu()
         save_images(advs_t, dir_path=params['output_dir_path'], file_name_list=temp_file_name_list)
         pbar.update()

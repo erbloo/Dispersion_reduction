@@ -16,10 +16,10 @@ import pdb
 def main():
     params = {
         'batch_size' : 16,
-        'checkpoint_path' : "test_models/inception_v3/ens3/ens3_adv_inception_v3.ckpt",
+        'checkpoint_path' : "test_models/inception_resnet_v2/ens/ens_adv_inception_resnet_v2.ckpt", # "test_models/inception_v3/ens3/ens3_adv_inception_v3.ckpt",
         'images_benign_dir' : '/home/yantao/datasets/imagenet_100image/original',
-        'images_adv_dir' : 'images_adv',
-        'model_name' : 'inception_v3',
+        'images_adv_dir' : "images_adv",
+        'model_name' : 'inception_resnet_v2',
         'IMAGE_SIZE' : 299,
         "NUM_CLASSES" : 1001,
     }
