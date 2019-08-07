@@ -8,3 +8,5 @@ docker pull erbloo/baidu_aisec:yantao_v1.0.0
 ```
 
 generate_DR_images.py generates adversarial examples as images using DR attack.
+
+Detailed demo is shown in https://github.com/anonymousjack/dr
