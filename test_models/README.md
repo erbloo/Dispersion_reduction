@@ -1,0 +1,1 @@
+pretrained weights can be found in https://github.com/tensorflow/models/tree/master/research/adv_imagenet_models
