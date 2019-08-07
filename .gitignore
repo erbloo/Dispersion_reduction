@@ -119,4 +119,4 @@ venv.bak/
 **/*.jpg
 **/*.png
 
-test_models/*
+**/*.ckpt*
