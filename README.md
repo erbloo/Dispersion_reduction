@@ -1,4 +1,6 @@
-# Dispersion_reduction
+# Dispersion_reduction (Deprecated)
+# Updated version is in https://github.com/erbloo/dr_cvpr20
+
 This repo is the code for the paper “Enhancing Cross-task Transferability of Adversarial Examples with Dispersion Reduction” published on CVPR Adversarial Machine Learning in Real-World Computer Vision Systems(CVPR’19).https://arxiv.org/abs/1905.03333
 
 ### Docker Quick Start
